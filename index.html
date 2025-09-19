@@ -344,7 +344,7 @@
                                     data-height="8.6">
                                     <div class="card-body text-center">
                                         <h6 class="card-title">Polaroid</h6>
-                                        <p class="card-text">5.4 x 8.6 cm</p>
+                                        <p class="card-text">6 x 9 cm</p>
                                         <small class="text-muted">Instax Mini (Tepi Putih)</small>
                                     </div>
                                 </div>
@@ -797,7 +797,7 @@
                 const pagePhotoGrid = currentPageDiv.querySelector('.photo-grid');
                 const img = document.createElement('img');
                 if (selectedSize.name === 'POLAROID') {
-                    img.style.padding = '12px 7px 23px 7px';
+                    img.style.padding = '1cm 0.5cm 2cm 0.5cm';
                 } else {
                     img.style.padding = '10px';
                 }
@@ -918,7 +918,7 @@
                     <img src="${photo.dataURL}" style="
                         width: ${selectedSize.width}cm;
                         height: ${selectedSize.height}cm;
-                        padding: 12px 7px 23px 7px;
+                        padding: 1cm 0.5cm 2cm 0.5cm;
                         object-fit: cover;
                         border: 2px solid #ddd;
                     " title="${photo.name} (${photo.copyNumber}/${photo.duplicates})">`;
