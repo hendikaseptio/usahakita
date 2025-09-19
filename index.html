@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cetak Foto Online</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+    <style>
+        .photo-container {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .photo-container:hover {
+            border-color: #0d6efd;
+            background: #e7f1ff;
+        }
+
+        .photo-preview {
+            max-width: 150px;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: 5px;
+        }
+
+        .size-card {
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .size-card:hover {
+            border-color: #0d6efd;
+            transform: translateY(-2px);
+        }
+
+        .size-card.selected {
+            border-color: #0d6efd;
+            background: #e7f1ff;
+        }
+
+        .print-preview {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .photo-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+
+        .print-photo {
+            border: 1px solid #ddd;
+            object-fit: cover;
+        }
+
+        .uploaded-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .photo-item {
+            position: relative;
+            display: inline-block;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+
+        .remove-photo {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .photo-controls {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .duplicate-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .duplicate-input {
+            width: 60px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 4px;
+        }
+
+        .duplicate-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .duplicate-btn:hover {
+            background: #5a6268;
+        }
+
+        .photo-name {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+            word-break: break-all;
+            max-width: 130px;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        .paper-option {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .paper-option:hover {
+            border-color: #0d6efd;
+            background: #f8f9ff;
+        }
+
+        .paper-option.selected {
+            border-color: #0d6efd;
+            background: #e7f1ff;
+        }
+
+        .paper-preview {
+            width: 60px;
+            height: 80px;
+            background: white;
+            border: 2px solid #dee2e6;
+            margin: 0 auto 10px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .paper-preview.a4 {
+            width: 50px;
+            height: 70px;
+        }
+
+        .paper-preview.f4 {
+            width: 55px;
+            height: 80px;
+        }
+
+        .duplicate-all-control {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .page-indicator {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            z-index: 10;
+        }
+
+        .print-page {
+            page-break-after: always;
+            margin-bottom: 20px;
+            border: 1px dashed #ccc;
+            padding: 10px;
+            background: white;
+        }
+
+        .print-page:last-child {
+            page-break-after: avoid;
+        }
+
+        .page-content .POLAROID img {
+            background-color: white;
+            padding: 12px 7px 23px 7px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-camera-fill me-2"></i>
+                Cetak Foto Online
+            </a>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Upload Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-cloud-upload me-2"></i>Upload Foto</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="photo-container" onclick="document.getElementById('photoInput').click()">
+                            <div class="text-center">
+                                <i class="bi bi-images display-3 text-muted"></i>
+                                <p class="mt-3 text-muted">Klik untuk upload foto atau drag & drop</p>
+                                <small class="text-muted">Maksimal 10MB per foto. Format: JPG, PNG, JPEG</small>
+                            </div>
+                        </div>
+                        <input type="file" id="photoInput" multiple accept="image/*" style="display: none;">
+
+                        <div class="uploaded-photos" id="uploadedPhotos"></div>
+                    </div>
+                </div>
+
+                <!-- Size Selection -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-rulers me-2"></i>Pilih Ukuran Foto</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="sizeOptions">
+                            <div class="col-md-4 mb-3">
+                                <div class="card size-card h-100" data-size="r1" data-width="2.5" data-height="3.5">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">R1</h6>
+                                        <p class="card-text">2.5 x 3.5 cm</p>
+                                        <small class="text-muted">Foto KTP/SIM</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card size-card h-100" data-size="r2" data-width="3.5" data-height="4.5">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">R2</h6>
+                                        <p class="card-text">3.5 x 4.5 cm</p>
+                                        <small class="text-muted">Pas Foto</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card size-card h-100" data-size="r3" data-width="5.0" data-height="8.9">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">R3</h6>
+                                        <p class="card-text">5.0 x 8.9 cm</p>
+                                        <small class="text-muted">Foto Resmi</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card size-card h-100" data-size="3x4" data-width="2.7" data-height="3.8">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">3x4</h6>
+                                        <p class="card-text">2.7 x 3.8 cm</p>
+                                        <small class="text-muted">Pas Foto Kecil</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card size-card h-100" data-size="4x6" data-width="3.8" data-height="5.6">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">4x6</h6>
+                                        <p class="card-text">3.8 x 5.6 cm</p>
+                                        <small class="text-muted">Foto Standar</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card size-card h-100" data-size="Polaroid" data-width="5.4"
+                                    data-height="8.6">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Polaroid</h6>
+                                        <p class="card-text">5.4 x 8.6 cm</p>
+                                        <small class="text-muted">Instax Mini (Tepi Putih)</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Paper Size Selection -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-file-earmark me-2"></i>Pilih Ukuran Kertas</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="paperOptions">
+                            <div class="col-md-6 mb-3">
+                                <div class="paper-option" data-paper="a4" data-width="21" data-height="29.7">
+                                    <div class="paper-preview a4"></div>
+                                    <h6 class="mb-1">A4</h6>
+                                    <p class="mb-0 text-muted">21 x 29.7 cm</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="paper-option" data-paper="f4" data-width="21.5" data-height="33">
+                                    <div class="paper-preview f4"></div>
+                                    <h6 class="mb-1">F4</h6>
+                                    <p class="mb-0 text-muted">21.5 x 33 cm</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Duplicate All Control -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0"><i class="bi bi-files me-2"></i>Duplikasi Semua Foto</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="duplicate-all-control">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <label class="form-label">Jumlah duplikat untuk semua foto:</label>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="duplicate-control">
+                                        <button class="duplicate-btn" onclick="changeAllDuplicates(-1)">
+                                            <i class="bi bi-dash"></i>
+                                        </button>
+                                        <input type="number" class="duplicate-input" id="allDuplicatesInput" min="1"
+                                            max="50" value="1" onchange="setAllDuplicates(this.value)">
+                                        <button class="duplicate-btn" onclick="changeAllDuplicates(1)">
+                                            <i class="bi bi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="applyAllDuplicates()">
+                                        <i class="bi bi-arrow-repeat me-1"></i>Terapkan ke Semua Foto
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                <!-- Statistics -->
+                <div class="stats-card">
+                    <h6><i class="bi bi-info-circle me-2"></i>Informasi</h6>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="h4 mb-0" id="photoCount">0</div>
+                            <small>Foto Dipilih</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="h4 mb-0" id="totalCopies">0</div>
+                            <small>Total Cetakan</small>
+                        </div>
+                    </div>
+                    <hr class="my-3">
+                    <div class="row text-center">
+                        <div class="col-12">
+                            <div class="h6 mb-0" id="selectedSize">-</div>
+                            <small>Ukuran Dipilih</small>
+                        </div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="row text-center">
+                        <div class="col-12">
+                            <div class="h6 mb-0" id="selectedPaper">-</div>
+                            <small>Kertas Dipilih</small>
+                        </div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="row text-center">
+                        <div class="col-12">
+                            <div class="h6 mb-0" id="totalPages">0</div>
+                            <small>Total Halaman</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-grid gap-2">
+                    <button class="btn btn-custom" id="previewBtn" disabled>
+                        <i class="bi bi-eye me-2"></i>Preview Cetak
+                    </button>
+                    <button class="btn btn-outline-primary" id="printBtn" disabled>
+                        <i class="bi bi-printer me-2"></i>Cetak Foto
+                    </button>
+                    <button class="btn btn-outline-secondary" id="resetBtn">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Print Preview -->
+        <div class="print-preview" id="printPreview" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5><i class="bi bi-eye me-2"></i>Preview Cetak</h5>
+                <button class="btn btn-sm btn-outline-secondary" onclick="closePrintPreview()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="photo-grid" id="photoGrid"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let uploadedPhotos = [];
+        let selectedSize = null;
+        let selectedPaper = { name: 'A4', width: 21, height: 29.7 }; // Default A4
+
+        // Photo upload handling
+        const photoInput = document.getElementById('photoInput');
+        const uploadedPhotosContainer = document.getElementById('uploadedPhotos');
+        const photoCountElement = document.getElementById('photoCount');
+        const selectedSizeElement = document.getElementById('selectedSize');
+        const selectedPaperElement = document.getElementById('selectedPaper');
+        const totalPagesElement = document.getElementById('totalPages');
+        const previewBtn = document.getElementById('previewBtn');
+        const printBtn = document.getElementById('printBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Set default paper selection
+        selectedPaperElement.textContent = selectedPaper.name;
+        document.querySelector('[data-paper="a4"]').classList.add('selected');
+
+        // Size selection handling
+        const sizeCards = document.querySelectorAll('.size-card');
+        sizeCards.forEach(card => {
+            card.addEventListener('click', function () {
+                sizeCards.forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+
+                selectedSize = {
+                    name: this.dataset.size.toUpperCase(),
+                    width: parseFloat(this.dataset.width),
+                    height: parseFloat(this.dataset.height)
+                };
+
+                selectedSizeElement.textContent = selectedSize.name;
+                calculatePages();
+                updateButtons();
+            });
+        });
+
+        // Paper selection handling
+        const paperOptions = document.querySelectorAll('.paper-option');
+        paperOptions.forEach(option => {
+            option.addEventListener('click', function () {
+                paperOptions.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+
+                selectedPaper = {
+                    name: this.dataset.paper.toUpperCase(),
+                    width: parseFloat(this.dataset.width),
+                    height: parseFloat(this.dataset.height)
+                };
+
+                selectedPaperElement.textContent = selectedPaper.name;
+                calculatePages();
+                updateButtons();
+            });
+        });
+
+        photoInput.addEventListener('change', function (e) {
+            const files = Array.from(e.target.files);
+            files.forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        uploadedPhotos.push({
+                            file: file,
+                            dataURL: e.target.result,
+                            name: file.name,
+                            duplicates: 1
+                        });
+                        displayUploadedPhotos();
+                        updatePhotoCount();
+                        updateButtons();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        // Drag and drop functionality
+        const photoContainer = document.querySelector('.photo-container');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            photoContainer.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            photoContainer.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            photoContainer.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            photoContainer.classList.add('border-primary');
+        }
+
+        function unhighlight(e) {
+            photoContainer.classList.remove('border-primary');
+        }
+
+        photoContainer.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        uploadedPhotos.push({
+                            file: file,
+                            dataURL: e.target.result,
+                            name: file.name,
+                            duplicates: 1
+                        });
+                        displayUploadedPhotos();
+                        updatePhotoCount();
+                        updateButtons();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function displayUploadedPhotos() {
+            uploadedPhotosContainer.innerHTML = '';
+            uploadedPhotos.forEach((photo, index) => {
+                const photoItem = document.createElement('div');
+                photoItem.className = 'photo-item';
+                photoItem.innerHTML = `
+                    <img src="${photo.dataURL}" class="photo-preview" alt="${photo.name}">
+                    <button class="remove-photo" onclick="removePhoto(${index})">
+                        <i class="bi bi-x"></i>
+                    </button>
+                    <div class="photo-controls">
+                        <div class="photo-name">${photo.name}</div>
+                        <div class="duplicate-control">
+                            <button class="duplicate-btn" onclick="changeDuplicates(${index}, -1)">
+                                <i class="bi bi-dash"></i>
+                            </button>
+                            <input type="number" class="duplicate-input" min="1" max="50" 
+                                   value="${photo.duplicates}" 
+                                   onchange="updateDuplicates(${index}, this.value)">
+                            <button class="duplicate-btn" onclick="changeDuplicates(${index}, 1)">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted">${photo.duplicates}x duplikat</small>
+                    </div>
+                `;
+                uploadedPhotosContainer.appendChild(photoItem);
+            });
+            updateTotalCopies();
+        }
+
+        function removePhoto(index) {
+            uploadedPhotos.splice(index, 1);
+            displayUploadedPhotos();
+            updatePhotoCount();
+            updateTotalCopies();
+            updateButtons();
+        }
+
+        function updatePhotoCount() {
+            photoCountElement.textContent = uploadedPhotos.length;
+        }
+
+        function updateTotalCopies() {
+            const totalCopies = uploadedPhotos.reduce((sum, photo) => sum + photo.duplicates, 0);
+            document.getElementById('totalCopies').textContent = totalCopies;
+            calculatePages();
+        }
+
+        function calculatePages() {
+            if (!selectedSize || !selectedPaper || uploadedPhotos.length === 0) {
+                totalPagesElement.textContent = '0';
+                return;
+            }
+
+            const totalCopies = uploadedPhotos.reduce((sum, photo) => sum + photo.duplicates, 0);
+
+            // Calculate how many photos fit per page with 0.5cm margin and 0.5cm gap
+            const margin = 1; // 0.5cm margin on each side = 1cm total
+            const gap = 0.1;
+
+            const availableWidth = selectedPaper.width - margin;
+            const availableHeight = selectedPaper.height - margin;
+
+            const photosPerRow = Math.floor((availableWidth + gap) / (selectedSize.width + gap));
+            const photosPerColumn = Math.floor((availableHeight + gap) / (selectedSize.height + gap));
+            const photosPerPage = photosPerRow * photosPerColumn;
+
+            const totalPages = Math.ceil(totalCopies / photosPerPage);
+            totalPagesElement.textContent = totalPages;
+        }
+
+        function changeAllDuplicates(change) {
+            const input = document.getElementById('allDuplicatesInput');
+            const newValue = parseInt(input.value) + change;
+            if (newValue >= 1 && newValue <= 50) {
+                input.value = newValue;
+            }
+        }
+
+        function setAllDuplicates(value) {
+            const numValue = parseInt(value);
+            if (numValue >= 1 && numValue <= 50) {
+                document.getElementById('allDuplicatesInput').value = numValue;
+            }
+        }
+
+        function applyAllDuplicates() {
+            const duplicateValue = parseInt(document.getElementById('allDuplicatesInput').value);
+            if (duplicateValue >= 1 && duplicateValue <= 50) {
+                uploadedPhotos.forEach(photo => {
+                    photo.duplicates = duplicateValue;
+                });
+                displayUploadedPhotos();
+            }
+        }
+
+        function changeDuplicates(index, change) {
+            const newValue = uploadedPhotos[index].duplicates + change;
+            if (newValue >= 1 && newValue <= 50) {
+                uploadedPhotos[index].duplicates = newValue;
+                displayUploadedPhotos();
+            }
+        }
+
+        function updateDuplicates(index, value) {
+            const numValue = parseInt(value);
+            if (numValue >= 1 && numValue <= 50) {
+                uploadedPhotos[index].duplicates = numValue;
+                updateTotalCopies();
+                // Update the display text
+                const photoItem = uploadedPhotosContainer.children[index];
+                const duplicateText = photoItem.querySelector('.text-muted');
+                duplicateText.textContent = `${numValue}x duplikat`;
+            }
+        }
+
+        function updateButtons() {
+            const hasPhotos = uploadedPhotos.length > 0;
+            const hasSize = selectedSize !== null;
+            const hasPaper = selectedPaper !== null;
+
+            previewBtn.disabled = !(hasPhotos && hasSize && hasPaper);
+            printBtn.disabled = !(hasPhotos && hasSize && hasPaper);
+        }
+
+        // Preview functionality
+        previewBtn.addEventListener('click', function () {
+            generatePreview();
+        });
+
+        function generatePreview() {
+            const printPreview = document.getElementById('printPreview');
+            const photoGrid = document.getElementById('photoGrid');
+
+            printPreview.style.display = 'block';
+            photoGrid.innerHTML = '';
+
+            // Convert cm to pixels (assuming 96 DPI for screen display)
+            const dpi = 37.8; // pixels per cm at standard screen resolution
+            const photoWidth = selectedSize.width * dpi;
+            const photoHeight = selectedSize.height * dpi;
+
+            // Calculate page layout
+            const margin = 0.5; // 0.5cm margin
+            const gap = 0.1; // 0.5cm gap between photos
+
+            const availableWidth = selectedPaper.width - (margin * 2);
+            const availableHeight = selectedPaper.height - (margin * 2);
+
+            const photosPerRow = Math.floor((availableWidth + gap) / (selectedSize.width + gap));
+            const photosPerColumn = Math.floor((availableHeight + gap) / (selectedSize.height + gap));
+            const photosPerPage = photosPerRow * photosPerColumn;
+
+            // Generate all photos with duplicates
+            let allPhotos = [];
+            uploadedPhotos.forEach((photo, photoIndex) => {
+                for (let i = 0; i < photo.duplicates; i++) {
+                    allPhotos.push({
+                        ...photo,
+                        copyNumber: i + 1,
+                        originalIndex: photoIndex
+                    });
+                }
+            });
+
+            // Create pages
+            let currentPage = 1;
+            let photosInCurrentPage = 0;
+            let currentPageDiv = null;
+
+            allPhotos.forEach((photo, index) => {
+                if (photosInCurrentPage === 0) {
+                    // Create new page
+                    currentPageDiv = document.createElement('div');
+                    currentPageDiv.className = 'print-page';
+                    currentPageDiv.innerHTML = `
+                        <div class="page-indicator">Halaman ${currentPage}</div>
+                        <div class="photo-grid" style="max-width: ${availableWidth * dpi}px;"></div>
+                    `;
+                    photoGrid.appendChild(currentPageDiv);
+                }
+
+                const pagePhotoGrid = currentPageDiv.querySelector('.photo-grid');
+                const img = document.createElement('img');
+                if (selectedSize.name === 'POLAROID') {
+                    img.style.padding = '12px 7px 23px 7px';
+                } else {
+                    img.style.padding = '10px';
+                }
+                img.src = photo.dataURL;
+                img.className = 'print-photo';
+                img.style.width = photoWidth + 'px';
+                img.style.height = photoHeight + 'px';
+                img.style.border = '1px solid #ddd';
+                img.title = `${photo.name} (${photo.copyNumber}/${photo.duplicates}) - Halaman ${currentPage}`;
+                pagePhotoGrid.appendChild(img);
+
+                photosInCurrentPage++;
+
+                if (photosInCurrentPage >= photosPerPage) {
+                    photosInCurrentPage = 0;
+                    currentPage++;
+                }
+            });
+
+            // Scroll to preview
+            printPreview.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function closePrintPreview() {
+            document.getElementById('printPreview').style.display = 'none';
+        }
+
+        // Print functionality
+        printBtn.addEventListener('click', function () {
+            if (uploadedPhotos.length === 0 || !selectedSize) {
+                alert('Silakan upload foto dan pilih ukuran terlebih dahulu!');
+                return;
+            }
+
+            generatePreview();
+
+            // Calculate layout for printing
+            const margin = 0.5; // 0.5cm margin
+            const gap = 0.1; // 0.5cm gap between photos
+
+            const availableWidth = selectedPaper.width - (margin * 2);
+            const availableHeight = selectedPaper.height - (margin * 2);
+
+            const photosPerRow = Math.floor((availableWidth + gap) / (selectedSize.width + gap));
+            const photosPerColumn = Math.floor((availableHeight + gap) / (selectedSize.height + gap));
+            const photosPerPage = photosPerRow * photosPerColumn;
+
+            // Calculate total copies for print info
+            const totalCopies = uploadedPhotos.reduce((sum, photo) => sum + photo.duplicates, 0);
+            const totalPages = Math.ceil(totalCopies / photosPerPage);
+
+            setTimeout(() => {
+                const printContent = generatePrintHTML();
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                printWindow.print();
+            }, 500);
+        });
+
+        function generatePrintHTML() {
+            // Calculate layout
+            const margin = 0.5; // 0.5cm margin
+            const gap = 0.1; // 0.5cm gap between photos
+
+            const availableWidth = selectedPaper.width - (margin * 2);
+            const availableHeight = selectedPaper.height - (margin * 2);
+
+            const photosPerRow = Math.floor((availableWidth + gap) / (selectedSize.width + gap));
+            const photosPerColumn = Math.floor((availableHeight + gap) / (selectedSize.height + gap));
+            const photosPerPage = photosPerRow * photosPerColumn;
+
+            // Generate all photos with duplicates
+            let allPhotos = [];
+            uploadedPhotos.forEach((photo, photoIndex) => {
+                for (let i = 0; i < photo.duplicates; i++) {
+                    allPhotos.push({
+                        ...photo,
+                        copyNumber: i + 1,
+                        originalIndex: photoIndex
+                    });
+                }
+            });
+
+            const totalCopies = allPhotos.length;
+            const totalPages = Math.ceil(totalCopies / photosPerPage);
+
+            // Generate pages HTML
+            let pagesHTML = '';
+            let currentPage = 1;
+            let photosInCurrentPage = 0;
+
+            for (let i = 0; i < allPhotos.length; i++) {
+                if (photosInCurrentPage === 0) {
+                    if (pagesHTML) pagesHTML += '</div></div>'; // Close previous page
+                    pagesHTML += `
+                        <div class="print-page" style="
+                            width: ${selectedPaper.width}cm;
+                            height: ${selectedPaper.height}cm;
+                            padding: ${margin}cm;
+                            box-sizing: border-box;
+                            page-break-after: ${currentPage < totalPages ? 'always' : 'avoid'};
+                            position: relative;
+                        ">
+                            <div class="page-content" style="
+                                display: flex;
+                                flex-wrap: wrap;
+                                gap: ${gap}cm;
+                                justify-content: flex-start;
+                                align-items: flex-start;
+                                width: 100%;
+                            ">`;
+                }
+
+                const photo = allPhotos[i];
+                if (selectedSize.name === 'POLAROID') {
+                    pagesHTML += `
+                    <img src="${photo.dataURL}" style="
+                        width: ${selectedSize.width}cm;
+                        height: ${selectedSize.height}cm;
+                        padding: 12px 7px 23px 7px;
+                        object-fit: cover;
+                        border: 2px solid #ddd;
+                    " title="${photo.name} (${photo.copyNumber}/${photo.duplicates})">`;
+                } else {
+                    pagesHTML += `
+                        <img src="${photo.dataURL}" style="
+                            width: ${selectedSize.width}cm;
+                            height: ${selectedSize.height}cm;
+                            padding: 10px;
+                            object-fit: cover;
+                            border: 2px solid #ddd;
+                        " title="${photo.name} (${photo.copyNumber}/${photo.duplicates})">`;
+                }
+
+                photosInCurrentPage++;
+
+                if (photosInCurrentPage >= photosPerPage || i === allPhotos.length - 1) {
+                    photosInCurrentPage = 0;
+                    currentPage++;
+                }
+            }
+
+            if (pagesHTML) pagesHTML += '</div></div>'; // Close last page
+
+            return `
+                <html>
+                    <head>
+                        <title>Cetak Foto - ${selectedSize.name} - ${selectedPaper.name}</title>
+                        <style>
+                            @page {
+                                size: ${selectedPaper.name === 'A4' ? 'A4' : selectedPaper.width + 'cm ' + selectedPaper.height + 'cm'};
+                                margin: 0;
+                            }
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                font-family: Arial, sans-serif;
+                            }
+                            .print-page {
+                                background: white;
+                            }
+                            @media screen {
+                                body { padding: 20px; }
+                                .print-page { 
+                                    border: 1px solid #ccc; 
+                                    margin-bottom: 20px;
+                                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${pagesHTML}
+                    </body>
+                </html>
+            `;
+        }
+
+        generatePreview();
+
+        printBtn.addEventListener('click', function () {
+
+            // Calculate layout for printing
+            const margin = 0.5; // 0.5cm margin
+            const gap = 0.1; // 0.5cm gap between photos
+
+            const availableWidth = selectedPaper.width - (margin * 2);
+            const availableHeight = selectedPaper.height - (margin * 2);
+
+            const photosPerRow = Math.floor((availableWidth + gap) / (selectedSize.width + gap));
+            const photosPerColumn = Math.floor((availableHeight + gap) / (selectedSize.height + gap));
+            const photosPerPage = photosPerRow * photosPerColumn;
+
+            // Calculate total copies for print info
+            const totalCopies = uploadedPhotos.reduce((sum, photo) => sum + photo.duplicates, 0);
+            const totalPages = Math.ceil(totalCopies / photosPerPage);
+
+            setTimeout(() => {
+                const printContent = generatePrintHTML();
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(printContent);
+                printWindow.document.close();
+                printWindow.print();
+            }, 500);
+        });
+
+
+
+        // Reset functionality
+        resetBtn.addEventListener('click', function () {
+            uploadedPhotos = [];
+            selectedSize = null;
+
+            displayUploadedPhotos();
+            updatePhotoCount();
+            selectedSizeElement.textContent = '-';
+            sizeCards.forEach(c => c.classList.remove('selected'));
+            updateButtons();
+            closePrintPreview();
+
+            // Reset file input
+            photoInput.value = '';
+        });
+
+        // Initialize
+        updatePhotoCount();
+        updateButtons();
+    </script>
+</body>
+
+</html>
