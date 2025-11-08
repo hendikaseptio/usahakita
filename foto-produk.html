@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Photo Generator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
+        rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Allura&family=Ephesis&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --gradient-primary: linear-gradient(135deg, #ff7e00, #ffb347, #ffd700);
+            --gradient-secondary: linear-gradient(45deg, #ff9500, #ffc649);
+            --text-dark: #2c3e50;
+            --text-light: #ffffff;
+        }
+
+        .montserrat {
+            font-family: "Montserrat", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .ephesis-regular {
+            font-family: "Ephesis", cursive;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        .allura-regular {
+            font-family: "Allura", cursive;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+
+        body {
+            background: var(--gradient-primary);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .container-main {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(255, 126, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header {
+            background: var(--gradient-secondary);
+            margin: -2rem -2rem 2rem -2rem;
+            padding: 2rem;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+            opacity: 0.5;
+        }
+
+        .header h1 {
+            color: var(--text-light);
+            font-weight: 700;
+            margin: 0;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            margin: 0.5rem 0 0 0;
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-control,
+        .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #ff7e00;
+            box-shadow: 0 0 0 0.2rem rgba(255, 126, 0, 0.25);
+            background: white;
+        }
+
+        .btn-gradient {
+            background: var(--gradient-secondary);
+            border: none;
+            color: white;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 126, 0, 0.3);
+            color: white;
+        }
+
+        .btn-gradient:active {
+            transform: translateY(0);
+        }
+
+        .btn-gradient:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 550px;
+            aspect-ratio: 1 / 1;
+            /* jaga 1:1 */
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(255, 126, 0, 0.2);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 15px;
+            display: block;
+        }
+
+        .upload-area {
+            border: 2px dashed #ff7e00;
+            border-radius: 15px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 126, 0, 0.05);
+        }
+
+        .upload-area:hover {
+            border-color: #ff9500;
+            background: rgba(255, 126, 0, 0.1);
+        }
+
+        .upload-area.dragover {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .filter-control {
+            margin: 0.5rem 0;
+        }
+
+        .range-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, #e9ecef, #ff7e00);
+            outline: none;
+        }
+
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--gradient-secondary);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(255, 126, 0, 0.4);
+        }
+
+        .range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--gradient-secondary);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(255, 126, 0, 0.4);
+        }
+
+        .section-title {
+            color: var(--text-dark);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(255, 126, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .bg-pattern {
+            position: relative;
+            /* overflow: hidden; */
+        }
+
+        .bg-pattern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ff7e00' fill-opacity='0.05'%3E%3Cpath d='M20 20c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8 8 3.6 8 8zm0-20c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8 8 3.6 8 8zm20 0c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8 8 3.6 8 8zm0 20c0 4.4-3.6 8-8 8s-8-3.6-8-8 3.6-8 8-8 8 3.6 8 8z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+            pointer-events: none;
+        }
+
+        .crop-container {
+            max-height: 400px;
+            margin: 1rem 0;
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #ff7e00;
+        }
+
+        .spinner-border-orange {
+            border-color: #ff7e00;
+            border-right-color: transparent;
+        }
+
+        .form-check-input:checked {
+            background-color: #ff7e00;
+            border-color: #ff7e00;
+        }
+
+        .form-check-input:focus {
+            border-color: #ff7e00;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(255, 126, 0, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .container-main {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-pattern">
+    <div class="container my-4">
+        <div class="container-main p-4">
+            <div class="header">
+                <h1><i class="bi bi-camera-fill me-3"></i>Product Photo Generator</h1>
+                <p>Buat foto produk yang menarik dengan AI background removal</p>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <!-- Upload Section -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="section-title">
+                                <i class="bi bi-cloud-upload text-warning"></i>
+                                Upload Produk
+                            </h5>
+                            <div class="upload-area" id="uploadArea">
+                                <i class="bi bi-cloud-upload fs-1 text-warning"></i>
+                                <p class="mb-2"><strong>Klik atau seret gambar ke sini</strong></p>
+                                <p class="text-muted small">Format: JPG, PNG, WEBP (Max: 5MB)</p>
+                                <input type="file" id="imageInput" accept="image/*" class="d-none">
+                            </div>
+
+                            <!-- Crop Container -->
+                            <div class="crop-container" id="cropContainer">
+                                <img id="cropImage" style="max-width: 100%;">
+                            </div>
+                            <div id="cropControls" class="mt-3" style="display: none;">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button class="btn btn-gradient w-100" id="cropBtn">
+                                            <i class="bi bi-crop"></i> Crop
+                                        </button>
+                                    </div>
+                                    <div class="col-6">
+                                        <button class="btn btn-outline-secondary w-100" id="cancelCropBtn">
+                                            <i class="bi bi-x"></i> Batal
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Info -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="section-title">
+                                <i class="bi bi-type text-warning"></i>
+                                Informasi Produk
+                            </h5>
+                            <div class="mb-3">
+                                <div class="row align-items-end">
+                                    <div class="col-auto flex-grow-1">
+                                        <label for="productTitle" class="form-label">Nama Produk</label>
+                                        <input type="text" class="form-control" id="productTitle"
+                                            placeholder="Masukkan nama produk...">
+                                    </div>
+                                    <div class="col-2">
+                                        <select id="titleFontSize" class="form-select">
+                                            <option value="24">24px</option>
+                                            <option value="28">28px</option>
+                                            <option value="32" selected>32px</option>
+                                            <option value="36">36px</option>
+                                            <option value="40">40px</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="fontTitleSelector" class="form-label">Font</label>
+                                <select id="fontTitleSelector" class="form-select">
+                                    <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                                    <option value="'Roboto', sans-serif">Roboto</option>
+                                    <option value="'Poppins', sans-serif">Poppins</option>
+                                    <option value="'Courier New', monospace">Courier New</option>
+                                    <option value="'Times New Roman', serif">Times New Roman</option>
+                                    <option value="'Montserrat'">Montserrat</option>
+                                    <option value="'Ephesis'">Ephesis</option>
+                                    <option value="'Allura'">Allura</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="productSubtitle" class="form-label">Sub Judul</label>
+                                <input type="text" class="form-control" id="productSubtitle"
+                                    placeholder="Deskripsi singkat produk...">
+                            </div>
+                            <div class="mb-3">
+                                <label for="fontSubTitleSelector" class="form-label">Font</label>
+                                <select id="fontSubTitleSelector" class="form-select">
+                                    <option value="'Montserrat'">Montserrat</option>
+                                    <option value="'Ephesis'">Ephesis</option>
+                                    <option value="'Allura'">Allura</option>
+                                    <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                                    <option value="'Roboto', sans-serif">Roboto</option>
+                                    <option value="'Poppins', sans-serif">Poppins</option>
+                                    <option value="'Courier New', monospace">Courier New</option>
+                                    <option value="'Times New Roman', serif">Times New Roman</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Layout Settings -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="section-title">
+                                <i class="bi bi-layout-three-columns text-warning"></i>
+                                Pengaturan Layout
+                            </h5>
+                            <div class="mb-3">
+                                <label for="textAlignment" class="form-label">Posisi Teks</label>
+                                <select class="form-select" id="textAlignment">
+                                    <option value="center">Tengah</option>
+                                    <option value="left">Kiri</option>
+                                    <option value="right">Kanan</option>
+                                    <option value="justify">Justify</option>
+                                </select>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="roundedCorners">
+                                <label class="form-check-label" for="roundedCorners">
+                                    Rounded Corners
+                                </label>
+                            </div>
+                            <div class="row">
+                                <div class="col-4">
+                                    <button class="btn btn-gradient w-100 btn-sm" id="showCropBtn" disabled>
+                                        <i class="bi bi-crop"></i> Crop
+                                    </button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-gradient w-100 btn-sm" id="removeBgBtn" disabled>
+                                        <i class="bi bi-scissors"></i> Hapus BG
+                                    </button>
+                                </div>
+                                <div class="col-4">
+                                    <button class="btn btn-gradient w-100 btn-sm" id="generateBtn">
+                                        <i class="bi bi-magic"></i> Generate
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <!-- Filters -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="section-title">
+                                <i class="bi bi-sliders text-warning"></i>
+                                Filter Gambar
+                            </h5>
+                            <div class="filter-control">
+                                <label class="form-label">Kecerahan: <span id="brightnessValue">100%</span></label>
+                                <input type="range" class="range-slider" id="brightness" min="50" max="150" value="100">
+                            </div>
+                            <div class="filter-control">
+                                <label class="form-label">Saturasi: <span id="saturationValue">100%</span></label>
+                                <input type="range" class="range-slider" id="saturation" min="50" max="200" value="100">
+                            </div>
+                            <div class="filter-control">
+                                <label class="form-label">Kontras: <span id="contrastValue">100%</span></label>
+                                <input type="range" class="range-slider" id="contrast" min="50" max="150" value="100">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="section-title">
+                                <i class="bi bi-eye text-warning"></i>
+                                Preview
+                            </h5>
+                            <div id="loadingArea" class="loading" style="display: none;">
+                                <div class="spinner-border spinner-border-orange me-2" role="status"></div>
+                                <span>Memproses...</span>
+                            </div>
+                            <div class="canvas-container">
+                                <canvas id="canvas" width="1080" height="1080"></canvas>
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-gradient w-100" id="downloadBtn">
+                                    <i class="bi bi-download"></i> Download Gambar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <script>
+        class ProductPhotoGenerator {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.uploadedImage = null;
+                this.processedImage = null;
+                this.backgroundRemoved = false;
+                this.cropper = null;
+                this.croppedImage = null;
+                this.selectedFontTitle = "'Ephesis'";
+                this.selectedFontSubTitle = "'Montserrat'";
+
+                this.initializeElements();
+                this.setupEventListeners();
+                this.drawInitialCanvas();
+                this.loadRemBG();
+                this.loadDefaultBackground();
+            }
+
+            async loadRemBG() {
+                try {
+                    // Load remove.bg alternative - using a simple edge detection for now
+                    // In production, you would use a service like remove.bg API
+                    console.log('Background removal ready');
+                } catch (error) {
+                    console.error('Failed to load background removal:', error);
+                }
+            }
+
+            initializeElements() {
+                this.uploadArea = document.getElementById('uploadArea');
+                this.imageInput = document.getElementById('imageInput');
+                this.productTitle = document.getElementById('productTitle');
+                this.productSubtitle = document.getElementById('productSubtitle');
+                this.textAlignment = document.getElementById('textAlignment');
+                this.roundedCorners = document.getElementById('roundedCorners');
+                this.brightnessSlider = document.getElementById('brightness');
+                this.saturationSlider = document.getElementById('saturation');
+                this.contrastSlider = document.getElementById('contrast');
+                this.removeBgBtn = document.getElementById('removeBgBtn');
+                this.generateBtn = document.getElementById('generateBtn');
+                this.downloadBtn = document.getElementById('downloadBtn');
+                this.showCropBtn = document.getElementById('showCropBtn');
+                this.cropBtn = document.getElementById('cropBtn');
+                this.cancelCropBtn = document.getElementById('cancelCropBtn');
+                this.cropContainer = document.getElementById('cropContainer');
+                this.cropControls = document.getElementById('cropControls');
+                this.cropImage = document.getElementById('cropImage');
+                this.loadingArea = document.getElementById('loadingArea');
+                this.fontTitleSelector = document.getElementById('fontTitleSelector');
+                this.fontSubTitleSelector = document.getElementById('fontSubTitleSelector');
+            }
+
+            setupEventListeners() {
+                // Upload events
+                this.uploadArea.addEventListener('click', () => this.imageInput.click());
+                this.imageInput.addEventListener('change', (e) => this.handleImageUpload(e));
+
+                // Drag and drop
+                this.uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.add('dragover');
+                });
+
+                this.uploadArea.addEventListener('dragleave', () => {
+                    this.uploadArea.classList.remove('dragover');
+                });
+
+                this.uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    this.uploadArea.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.processImageFile(files[0]);
+                    }
+                });
+
+                // Filter sliders
+                this.brightnessSlider.addEventListener('input', () => {
+                    document.getElementById('brightnessValue').textContent = this.brightnessSlider.value + '%';
+                    this.applyFilters();
+                });
+
+                this.saturationSlider.addEventListener('input', () => {
+                    document.getElementById('saturationValue').textContent = this.saturationSlider.value + '%';
+                    this.applyFilters();
+                });
+
+                this.contrastSlider.addEventListener('input', () => {
+                    document.getElementById('contrastValue').textContent = this.contrastSlider.value + '%';
+                    this.applyFilters();
+                });
+
+                // Buttons
+                this.showCropBtn.addEventListener('click', () => this.showCropper());
+                this.cropBtn.addEventListener('click', () => this.applyCrop());
+                this.cancelCropBtn.addEventListener('click', () => this.hideCropper());
+                this.removeBgBtn.addEventListener('click', () => this.removeBackground());
+                this.generateBtn.addEventListener('click', () => this.generateFinalImage());
+                this.downloadBtn.addEventListener('click', () => this.downloadImage());
+
+                // Text inputs and settings
+                this.productTitle.addEventListener('input', () => this.generateFinalImage());
+                this.productSubtitle.addEventListener('input', () => this.generateFinalImage());
+                this.textAlignment.addEventListener('change', () => this.generateFinalImage());
+                this.roundedCorners.addEventListener('change', () => this.generateFinalImage());
+
+                // font selectors
+                this.fontTitleSelector.addEventListener('change', () => {
+                    this.selectedFontTitle = this.fontTitleSelector.value;
+                    this.generateFinalImage();
+                });
+                this.fontSubTitleSelector.addEventListener('change', () => {
+                    this.selectedFontSubTitle = this.fontSubTitleSelector.value;
+                    this.generateFinalImage();
+                });
+            }
+
+            handleImageUpload(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    this.processImageFile(file);
+                }
+            }
+
+            processImageFile(file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Ukuran file terlalu besar! Maksimal 5MB.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        this.uploadedImage = img;
+                        this.croppedImage = null;
+                        this.backgroundRemoved = false;
+                        this.showCropBtn.disabled = false;
+                        this.removeBgBtn.disabled = false;
+                        this.cropImage.src = e.target.result;
+                        this.applyFilters();
+                        this.generateFinalImage();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+
+            showCropper() {
+                this.cropContainer.style.display = 'block';
+                this.cropControls.style.display = 'block';
+                this.uploadArea.style.display = 'none';
+
+                if (this.cropper) {
+                    this.cropper.destroy();
+                }
+
+                this.cropper = new Cropper(this.cropImage, {
+                    aspectRatio: NaN, // ← ini artinya bebas rasio
+                    viewMode: 1,
+                    responsive: true,
+                    background: false,
+                    autoCropArea: 0.8,
+                });
+            }
+
+            applyCrop() {
+                if (this.cropper) {
+                    const canvas = this.cropper.getCroppedCanvas({
+                        width: 1080,
+                        height: 1080,
+                    });
+
+                    const img = new Image();
+                    img.onload = () => {
+                        this.croppedImage = img;
+                        this.hideCropper();
+                        this.applyFilters();
+                        this.generateFinalImage();
+                    };
+                    img.src = canvas.toDataURL();
+                }
+            }
+
+            hideCropper() {
+                this.cropContainer.style.display = 'none';
+                this.cropControls.style.display = 'none';
+                this.uploadArea.style.display = 'block';
+
+                if (this.cropper) {
+                    this.cropper.destroy();
+                    this.cropper = null;
+                }
+            }
+
+            applyFilters() {
+                const sourceImg = this.croppedImage || this.uploadedImage;
+                if (!sourceImg) return;
+
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = 1080;
+                tempCanvas.height = 1080;
+
+                // Apply object-fit: cover behavior
+                const scale = Math.max(1080 / sourceImg.width, 1080 / sourceImg.height);
+                const scaledWidth = sourceImg.width * scale;
+                const scaledHeight = sourceImg.height * scale;
+                const offsetX = (1080 - scaledWidth) / 2;
+                const offsetY = (1080 - scaledHeight) / 2;
+
+                tempCtx.filter = `brightness(${this.brightnessSlider.value}%) saturate(${this.saturationSlider.value}%) contrast(${this.contrastSlider.value}%)`;
+                tempCtx.imageSmoothingEnabled = true;
+                tempCtx.imageSmoothingQuality = 'high';
+                tempCtx.drawImage(sourceImg, offsetX, offsetY, scaledWidth, scaledHeight);
+
+                this.processedImage = tempCanvas;
+                this.generateFinalImage();
+            }
+
+            async removeBackground() {
+                if (!this.processedImage && !this.croppedImage && !this.uploadedImage) {
+                    alert('Silakan upload gambar terlebih dahulu!');
+                    return;
+                }
+
+                this.loadingArea.style.display = 'flex';
+                this.removeBgBtn.disabled = true;
+
+                try {
+                    // Enhanced background removal using multiple techniques
+                    const sourceImg = this.processedImage || this.croppedImage || this.uploadedImage;
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCanvas.width = 1080;
+                    tempCanvas.height = 1080;
+
+                    // Apply object-fit behavior
+                    const scale = Math.max(1080 / sourceImg.width, 1080 / sourceImg.height);
+                    const scaledWidth = sourceImg.width * scale;
+                    const scaledHeight = sourceImg.height * scale;
+                    const offsetX = (1080 - scaledWidth) / 2;
+                    const offsetY = (1080 - scaledHeight) / 2;
+
+                    tempCtx.imageSmoothingEnabled = true;
+                    tempCtx.imageSmoothingQuality = 'high';
+                    tempCtx.drawImage(sourceImg, offsetX, offsetY, scaledWidth, scaledHeight);
+                    const imageData = tempCtx.getImageData(0, 0, 1080, 1080);
+                    const data = imageData.data;
+
+                    // Advanced background removal algorithm
+                    const edges = this.detectEdges(imageData);
+                    const backgroundMask = this.createBackgroundMask(imageData, edges);
+
+                    // Apply mask
+                    for (let i = 0; i < data.length; i += 4) {
+                        const pixelIndex = i / 4;
+                        if (backgroundMask[pixelIndex]) {
+                            data[i + 3] = 0; // Make transparent
+                        } else {
+                            // Enhance foreground
+                            data[i] = Math.min(255, data[i] * 1.1);     // R
+                            data[i + 1] = Math.min(255, data[i + 1] * 1.1); // G
+                            data[i + 2] = Math.min(255, data[i + 2] * 1.1); // B
+                        }
+                    }
+
+                    tempCtx.putImageData(imageData, 0, 0);
+                    this.processedImage = tempCanvas;
+                    this.backgroundRemoved = true;
+                    this.generateFinalImage();
+
+                } catch (error) {
+                    console.error('Background removal failed:', error);
+                    alert('Gagal menghapus background. Silakan coba lagi.');
+                } finally {
+                    this.loadingArea.style.display = 'none';
+                    this.removeBgBtn.disabled = false;
+                }
+            }
+
+            detectEdges(imageData) {
+                const { data, width, height } = imageData;
+                const edges = new Uint8Array(width * height);
+
+                // Sobel edge detection
+                for (let y = 1; y < height - 1; y++) {
+                    for (let x = 1; x < width - 1; x++) {
+                        const idx = (y * width + x) * 4;
+
+                        // Calculate gradients
+                        let gx = 0, gy = 0;
+                        for (let dy = -1; dy <= 1; dy++) {
+                            for (let dx = -1; dx <= 1; dx++) {
+                                const pixelIdx = ((y + dy) * width + (x + dx)) * 4;
+                                const intensity = (data[pixelIdx] + data[pixelIdx + 1] + data[pixelIdx + 2]) / 3;
+
+                                // Sobel kernels
+                                const sobelX = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
+                                const sobelY = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
+                                const kernelIdx = (dy + 1) * 3 + (dx + 1);
+                                gx += intensity * sobelX[kernelIdx];
+                                gy += intensity * sobelY[kernelIdx];
+                            }
+                        }
+
+                        const magnitude = Math.sqrt(gx * gx + gy * gy);
+                        edges[y * width + x] = magnitude > 30 ? 255 : 0;
+                    }
+                }
+                return edges;
+            }
+
+            createBackgroundMask(imageData, edges) {
+                const { data, width, height } = imageData;
+                const mask = new Uint8Array(width * height);
+
+                // Get corner samples for background color
+                const corners = [
+                    { x: 0, y: 0 },
+                    { x: width - 1, y: 0 },
+                    { x: 0, y: height - 1 },
+                    { x: width - 1, y: height - 1 }
+                ];
+
+                const bgColors = corners.map(corner => {
+                    const idx = (corner.y * width + corner.x) * 4;
+                    return {
+                        r: data[idx],
+                        g: data[idx + 1],
+                        b: data[idx + 2]
+                    };
+                });
+
+                // Flood fill from edges
+                const visited = new Set();
+                const queue = [];
+
+                // Start from all edge pixels
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        if ((x === 0 || x === width - 1 || y === 0 || y === height - 1) &&
+                            !visited.has(y * width + x)) {
+                            queue.push({ x, y });
+                        }
+                    }
+                }
+
+                while (queue.length > 0) {
+                    const { x, y } = queue.shift();
+                    const idx = y * width + x;
+
+                    if (visited.has(idx) || x < 0 || x >= width || y < 0 || y >= height) {
+                        continue;
+                    }
+
+                    const pixelIdx = idx * 4;
+                    const r = data[pixelIdx];
+                    const g = data[pixelIdx + 1];
+                    const b = data[pixelIdx + 2];
+
+                    // Check if pixel is similar to background
+                    const isSimilarToBg = bgColors.some(bgColor => {
+                        const diff = Math.abs(r - bgColor.r) + Math.abs(g - bgColor.g) + Math.abs(b - bgColor.b);
+                        return diff < 100;
+                    });
+
+                    if (isSimilarToBg && edges[idx] < 100) {
+                        visited.add(idx);
+                        mask[idx] = 1; // Mark as background
+
+                        // Add neighbors
+                        for (let dy = -1; dy <= 1; dy++) {
+                            for (let dx = -1; dx <= 1; dx++) {
+                                queue.push({ x: x + dx, y: y + dy });
+                            }
+                        }
+                    }
+                }
+
+                return mask;
+            }
+
+            drawInitialCanvas() {
+                // load default background
+                if (this.backgroundImage) {
+                    this.ctx.imageSmoothingEnabled = true;
+                    this.ctx.imageSmoothingQuality = 'high';
+                    this.ctx.drawImage(this.backgroundImage, 0, 0, this.canvas.width, this.canvas.height);
+                } else {
+                    // Optional fallback kalau gambar gagal dimuat
+                    this.ctx.fillStyle = '#ddd';
+                    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                }
+            }
+
+            generateFinalImage() {
+                // Clear canvas and draw background
+                this.drawInitialCanvas();
+
+                const title = this.productTitle.value || 'Nama Produk';
+                const subtitle = this.productSubtitle.value || 'Deskripsi Produk';
+                const alignment = this.textAlignment.value;
+                const rounded = this.roundedCorners.checked;
+
+                // Layout: Title at top, Image in middle, Subtitle at bottom
+                const titleY = 120;
+                const imageY = 140;
+                const imageSize = 800;
+                const subtitleY = 980;
+
+                // Draw title at top
+                this.drawText(title, titleY, alignment, '80px', '#44403b', true, 'title');
+
+                // Draw product image in middle if available
+                if (this.processedImage || this.croppedImage || this.uploadedImage) {
+                    const img = this.processedImage || this.croppedImage || this.uploadedImage;
+                    const x = (this.canvas.width - imageSize) / 2;
+
+                    this.ctx.save();
+
+                    if (rounded) {
+                        // Create rounded rectangle clipping path
+                        const radius = 20;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(x + radius, imageY);
+                        this.ctx.lineTo(x + imageSize - radius, imageY);
+                        this.ctx.quadraticCurveTo(x + imageSize, imageY, x + imageSize, imageY + radius);
+                        this.ctx.lineTo(x + imageSize, imageY + imageSize - radius);
+                        this.ctx.quadraticCurveTo(x + imageSize, imageY + imageSize, x + imageSize - radius, imageY + imageSize);
+                        this.ctx.lineTo(x + radius, imageY + imageSize);
+                        this.ctx.quadraticCurveTo(x, imageY + imageSize, x, imageY + imageSize - radius);
+                        this.ctx.lineTo(x, imageY + radius);
+                        this.ctx.quadraticCurveTo(x, imageY, x + radius, imageY);
+                        this.ctx.closePath();
+                        this.ctx.clip();
+                    }
+
+                    // Draw image with object-fit: cover behavior
+                    if (this.processedImage) {
+                        this.ctx.imageSmoothingEnabled = true;
+                        this.ctx.imageSmoothingQuality = 'high';
+                        this.ctx.drawImage(this.processedImage, x, imageY, imageSize, imageSize);
+                    } else {
+                        const scale = Math.max(imageSize / img.width, imageSize / img.height);
+                        const scaledWidth = img.width * scale;
+                        const scaledHeight = img.height * scale;
+                        const offsetX = x + (imageSize - scaledWidth) / 2;
+                        const offsetY = imageY + (imageSize - scaledHeight) / 2;
+                        this.ctx.imageSmoothingEnabled = true;
+                        this.ctx.imageSmoothingQuality = 'high';
+                        this.ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+                    }
+
+                    this.ctx.restore();
+                }
+
+                // Draw subtitle at bottom
+                this.drawText(subtitle, subtitleY, alignment, '30px', '#44403b', false, 'subtitle');
+            }
+
+            drawText(text, y, alignment, fontSize, color, bold, type = 'title') {
+                const fontFamily = type === 'title' ? this.selectedFontTitle : this.selectedFontSubTitle;
+                this.ctx.font = `${bold ? 'bold' : 'normal'} ${fontSize} ${fontFamily}`;
+                this.ctx.fillStyle = color;
+                let x;
+                switch (alignment) {
+                    case 'left':
+                        this.ctx.textAlign = 'left';
+                        x = 40;
+                        break;
+                    case 'right':
+                        this.ctx.textAlign = 'right';
+                        x = this.canvas.width - 40;
+                        break;
+                    case 'center':
+                    default:
+                        this.ctx.textAlign = 'center';
+                        x = this.canvas.width / 2;
+                        break;
+                }
+
+                // Add text shadow
+                // this.ctx.shadowColor = 'rgba(0,0,0,0.3)';
+                // this.ctx.shadowBlur = 4;
+                // this.ctx.shadowOffsetX = 2;
+                // this.ctx.shadowOffsetY = 2;
+
+                // Handle text wrapping for long text
+                const maxWidth = this.canvas.width - 80;
+                const words = text.split(' ');
+                let line = '';
+                const lineHeight = parseInt(fontSize) * 1.2;
+
+                for (let i = 0; i < words.length; i++) {
+                    const testLine = line + words[i] + ' ';
+                    const metrics = this.ctx.measureText(testLine);
+                    const testWidth = metrics.width;
+
+                    if (testWidth > maxWidth && i > 0) {
+                        this.ctx.fillText(line, x, y);
+                        line = words[i] + ' ';
+                        y += lineHeight;
+                    } else {
+                        line = testLine;
+                    }
+                }
+                this.ctx.fillText(line, x, y);
+
+                // Reset shadow
+                this.ctx.shadowColor = 'transparent';
+                this.ctx.shadowBlur = 0;
+                this.ctx.shadowOffsetX = 0;
+                this.ctx.shadowOffsetY = 0;
+            }
+
+            downloadImage() {
+                const link = document.createElement('a');
+                link.download = `product-photo-${Date.now()}.png`;
+                link.href = this.canvas.toDataURL('image/png', 1.0);
+                link.click();
+            }
+            loadDefaultBackground() {
+                const bg = new Image();
+                bg.onload = () => {
+                    this.backgroundImage = bg;
+                    this.generateFinalImage();
+                };
+                bg.src = 'assets/bg-produk.png';
+            }
+
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new ProductPhotoGenerator();
+        });
+    </script>
+</body>
+
+</html>
